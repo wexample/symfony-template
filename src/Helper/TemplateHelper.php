@@ -3,6 +3,7 @@
 namespace Wexample\SymfonyTemplate\Helper;
 
 use Wexample\Helpers\Helper\TextHelper;
+use Wexample\SymfonyHelpers\Class\AbstractBundle;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
 
 class TemplateHelper
@@ -40,7 +41,7 @@ class TemplateHelper
 
     public static function explodeControllerNamespaceSubParts(
         string $controllerName,
-        string $bundleClassPath = null
+        AbstractBundle|string|null $bundleClassPath = null,
     ): array
     {
         $controllerName = AbstractController::removeSuffix($controllerName);
