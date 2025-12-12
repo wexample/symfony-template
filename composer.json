@@ -1,0 +1,21 @@
+{
+  "name": "wexample/symfony-template",
+  "description": "Various helpers for Symfony templating",
+  "type": "library",
+  "license": "MIT",
+  "version": "0.0.1",
+  "autoload": {
+    "psr-4": {
+      "Wexample\\SymfonyTemplate\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "weeger",
+      "email": "romain.weeger@wexample.com"
+    }
+  ],
+  "require": {
+    "wexample/symfony-helpers": "1.0.72"
+  }
+}
