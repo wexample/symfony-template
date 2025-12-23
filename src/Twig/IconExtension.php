@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Twig\Environment;
 use Twig\TwigFunction;
 use Wexample\Helpers\Helper\TextHelper;
-use Wexample\SymfonyTemplate\Helper\DomHelper;
+use Wexample\SymfonyHelpers\Helper\DomHelper;
 use Wexample\SymfonyHelpers\Helper\FileHelper;
 use Wexample\SymfonyHelpers\Helper\VariableHelper;
 use Wexample\SymfonyHelpers\Twig\AbstractExtension;
