@@ -32,8 +32,7 @@ class SystemExtension extends AbstractExtension
      */
     public function systemVersion(
         string $versionFile = 'version.txt'
-    ): ?string
-    {
+    ): ?string {
         $versionFilePath = $this->kernel->getProjectDir() . '/' . $versionFile;
 
         if (is_file($versionFilePath)) {

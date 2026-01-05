@@ -1,5 +1,5 @@
 {
-  "name": "wexample/symfony-template",
+  "name": "wexample/symfony-routing",
   "description": "Various helpers for Symfony templating",
   "type": "library",
   "license": "MIT",
