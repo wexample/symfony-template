@@ -130,7 +130,7 @@ Refer to each package's documentation for specific version compatibility require
 ## Dependencies
 
 - ext-dom: *
-- wexample/symfony-helpers: 1.0.72
+- wexample/symfony-helpers: 1.0.74
 
 
 # About us

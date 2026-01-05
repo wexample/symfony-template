@@ -17,6 +17,6 @@
   ],
   "require": {
     "ext-dom": "*",
-    "wexample/symfony-helpers": "1.0.72"
+    "wexample/symfony-helpers": "1.0.75"
   }
 }
