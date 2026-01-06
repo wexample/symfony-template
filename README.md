@@ -1,6 +1,6 @@
-# wexample/symfony-routing
+# wexample/symfony-template
 
-Version: 0.0.1
+Version: 0.0.3
 
 Various helpers for Symfony templating
 
@@ -130,7 +130,7 @@ Refer to each package's documentation for specific version compatibility require
 ## Dependencies
 
 - ext-dom: *
-- wexample/symfony-helpers: 1.0.72
+- wexample/symfony-helpers: 1.0.77
 
 
 # About us
