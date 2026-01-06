@@ -1,9 +1,9 @@
 {
-  "name": "wexample/symfony-routing",
+  "name": "wexample/symfony-template",
   "description": "Various helpers for Symfony templating",
   "type": "library",
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyTemplate\\": "src/"

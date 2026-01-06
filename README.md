@@ -1,6 +1,6 @@
-# wexample/symfony-routing
+# wexample/symfony-template
 
-Version: 0.0.1
+Version: 0.0.3
 
 Various helpers for Symfony templating
 
