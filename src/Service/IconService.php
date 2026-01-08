@@ -8,12 +8,14 @@ use Wexample\SymfonyHelpers\Helper\DomHelper;
 use Wexample\SymfonyTemplate\Service\Icon\AbstractIconManager;
 use Wexample\SymfonyTemplate\Service\Icon\FaIconManager;
 use Wexample\SymfonyTemplate\Service\Icon\MaterialIconManager;
+use Wexample\SymfonyTemplate\Service\Icon\PhosphorIconManager;
 
 class IconService
 {
     public function __construct(
         private readonly FaIconManager $faIconManager,
-        private readonly MaterialIconManager $materialIconManager
+        private readonly MaterialIconManager $materialIconManager,
+        private readonly PhosphorIconManager $phosphorIconManager
     ) {
     }
 
@@ -38,6 +40,11 @@ class IconService
         $lib = $type ?? $prefix;
         $class = trim($class);
         $baseClass = $class !== '' ? $class . ' icon' : 'icon';
+
+        // Phosphor
+        if ($this->phosphorIconManager->getLibraryKey() === $lib) {
+            return $this->phosphorIconManager->iconTag($icon, $baseClass, $tagName);
+        }
 
         // Material Icons
         if (
@@ -81,6 +88,10 @@ class IconService
             return $this->faIconManager->iconSource($twig, $icon, $classes) ?? $default;
         }
 
+        if ($type === $this->phosphorIconManager->getLibraryKey()) {
+            return $default;
+        }
+
         return $default;
     }
 
@@ -92,6 +103,7 @@ class IconService
         return match ($type) {
             $this->faIconManager->getLibraryKey() => $this->faIconManager->iconList(),
             $this->materialIconManager->getLibraryKey() => $this->materialIconManager->iconList(),
+            $this->phosphorIconManager->getLibraryKey() => [],
             default => [],
         };
     }
