@@ -4,7 +4,7 @@ namespace Wexample\SymfonyTemplate;
 
 use Wexample\SymfonyHelpers\Class\AbstractBundle;
 use Wexample\SymfonyHelpers\Helper\BundleHelper;
-use Wexample\SymfonyLoader\Interface\LoaderBundleInterface;
+use Wexample\SymfonyHelpers\Interface\LoaderBundleInterface;
 
 class WexampleSymfonyTemplateBundle extends AbstractBundle implements LoaderBundleInterface
 {
