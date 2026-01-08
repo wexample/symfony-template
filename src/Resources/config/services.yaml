@@ -4,5 +4,6 @@ services:
         autoconfigure: true
         public: false
 
-    Wexample\SymfonyTemplate\Twig\:
-        resource: "../../Twig"
+    Wexample\SymfonyTemplate\:
+        resource: '../../{Service,Twig}'
+        tags: ['controller.service_arguments']
