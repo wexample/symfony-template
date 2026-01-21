@@ -17,6 +17,7 @@
   ],
   "require": {
     "ext-dom": "*",
+    "league/commonmark": "^2.4",
     "wexample/symfony-helpers": "1.0.80"
   }
 }
