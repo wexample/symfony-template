@@ -5,6 +5,7 @@ namespace Wexample\SymfonyTemplate\Helper;
 use Wexample\Helpers\Helper\TextHelper;
 use Wexample\SymfonyHelpers\Class\AbstractBundle;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
+use Wexample\SymfonyHelpers\Helper\ArrayHelper;
 
 class TemplateHelper
 {
@@ -54,5 +55,21 @@ class TemplateHelper
         }
 
         return array_splice($parts, $spliceCount);
+    }
+
+    public static function stripTwigContextKeys(array $context, array $extraKeys = []): array
+    {
+        $defaultKeys = [
+            'id',
+            'value_attr',
+            'input_attr',
+            'error_condition',
+            'error_text',
+        ];
+
+        return ArrayHelper::removeKeys(
+            $context,
+            array_merge($defaultKeys, $extraKeys)
+        );
     }
 }

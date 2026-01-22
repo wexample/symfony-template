@@ -1,6 +1,6 @@
 # wexample/symfony-template
 
-Version: 0.0.6
+Version: 0.0.7
 
 Various helpers for Symfony templating
 
@@ -130,7 +130,8 @@ Refer to each package's documentation for specific version compatibility require
 ## Dependencies
 
 - ext-dom: *
-- wexample/symfony-helpers: 1.0.80
+- league/commonmark: ^2.4
+- wexample/symfony-helpers: 1.0.81
 
 
 # About us

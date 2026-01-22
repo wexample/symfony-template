@@ -3,7 +3,7 @@
   "description": "Various helpers for Symfony templating",
   "type": "library",
   "license": "MIT",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyTemplate\\": "src/"
@@ -17,6 +17,7 @@
   ],
   "require": {
     "ext-dom": "*",
-    "wexample/symfony-helpers": "1.0.80"
+    "league/commonmark": "^2.4",
+    "wexample/symfony-helpers": "1.0.81"
   }
 }
