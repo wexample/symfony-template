@@ -130,6 +130,7 @@ Refer to each package's documentation for specific version compatibility require
 ## Dependencies
 
 - ext-dom: *
+- league/commonmark: ^2.4
 - wexample/symfony-helpers: 1.0.80
 
 
