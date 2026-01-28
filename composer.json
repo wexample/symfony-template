@@ -1,23 +1,23 @@
 {
-    "name": "wexample/symfony-template",
-    "description": "Various helpers for Symfony templating",
-    "type": "library",
-    "license": "MIT",
-    "version": "0.0.14",
-    "autoload": {
-        "psr-4": {
-            "Wexample\\SymfonyTemplate\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "weeger",
-            "email": "romain.weeger@wexample.com"
-        }
-    ],
-    "require": {
-        "ext-dom": "*",
-        "league/commonmark": "^2.4",
-        "wexample/symfony-helpers": "*"
+  "name": "wexample/symfony-template",
+  "description": "Various helpers for Symfony templating",
+  "type": "library",
+  "license": "MIT",
+  "version": "0.0.15",
+  "autoload": {
+    "psr-4": {
+      "Wexample\\SymfonyTemplate\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "weeger",
+      "email": "romain.weeger@wexample.com"
+    }
+  ],
+  "require": {
+    "ext-dom": "*",
+    "league/commonmark": "^2.4",
+    "wexample/symfony-helpers": "1.0.89"
+  }
 }
