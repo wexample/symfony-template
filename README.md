@@ -1,6 +1,6 @@
 # wexample/symfony-template
 
-Version: 0.0.18
+Version: 0.0.19
 
 Various helpers for Symfony templating
 
