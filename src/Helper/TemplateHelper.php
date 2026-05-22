@@ -23,19 +23,19 @@ class TemplateHelper
 
     public static function trimPathPrefix(
         string $domain,
-    ): string
-    {
+    ): string {
         return substr($domain, strlen(self::VIEW_PATH_PREFIX));
     }
 
     public static function joinNormalizedParts(
         array $parts,
         string $separator = '/'
-    ): string
-    {
+    ): string {
         return implode(
             $separator,
-            array_map([TextHelper::class, 'toSnake'], $parts
+            array_map(
+                [TextHelper::class, 'toSnake'],
+                $parts
             )
         );
     }
@@ -43,8 +43,7 @@ class TemplateHelper
     public static function explodeControllerNamespaceSubParts(
         string $controllerName,
         AbstractBundle|string|null $bundleClassPath = null,
-    ): array
-    {
+    ): array {
         $controllerName = AbstractController::removeSuffix($controllerName);
         $parts = explode('\\', $controllerName);
 
