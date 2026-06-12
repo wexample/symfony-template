@@ -1,6 +1,6 @@
 # symfony_template
 
-Version: 0.0.21
+Version: 0.0.22
 
 Various helpers for Symfony templating
 
@@ -29,7 +29,7 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 
 - ext-dom: *
 - league/commonmark: ^2.4
-- wexample/symfony-helpers: >=2.0.0
+- wexample/symfony-helpers: *
 
 ## Versioning & Compatibility Policy
 
