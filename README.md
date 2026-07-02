@@ -1,6 +1,6 @@
 # symfony_template
 
-Version: 0.0.22
+Version: 0.0.23
 
 Various helpers for Symfony templating
 
