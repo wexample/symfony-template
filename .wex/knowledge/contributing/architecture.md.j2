@@ -1,0 +1,90 @@
+## Architecture
+
+The package is a Symfony bundle with no controllers, no entities and no configuration tree: it registers a handful of Twig extensions, and those extensions delegate to services. Four layers, in the order a request crosses them — bundle → container → Twig extension → service → icon manager — plus one static helper that sits outside the container entirely.
+
+### Bundle and container wiring
+
+{{ path("src/WexampleSymfonyTemplateBundle.php") }} extends `AbstractBundle` from `wexample/symfony-helpers` and implements `LoaderBundleInterface`. Its only body is the front-asset declaration:
+
+```php
+public static function getLoaderFrontPaths(): array
+{
+    return [
+        BundleHelper::getBundleCssAlias(static::class) => __DIR__.'/../assets/',
+    ];
+}
+```
+
+`getBundleCssAlias()` kebab-cases the first two namespace segments, so the alias is `@wexample/symfony-template` pointing at {{ path("assets") }}.
+
+Service registration goes through {{ path("src/DependencyInjection/WexampleSymfonyTemplateExtension.php") }}, whose `load()` is a single call to `$this->loadConfig(__DIR__, $container)`. The parent resolves `__DIR__.'/../Resources/config'` and loads `services.yaml` — which is why {{ path("src/Resources/config/services.yaml") }} lives under `Resources/`, not at the package root. That file registers two directories and nothing else:
+
+```yaml
+Wexample\SymfonyTemplate\:
+    resource: '../../{Service,Twig}'
+    tags: ['controller.service_arguments']
+```
+
+`src/Helper/` is deliberately absent from that glob: `TemplateHelper` is all static methods and is never instantiated.
+
+### The Twig layer
+
+Three extensions in {{ path("src/Twig") }}, all extending `AbstractExtension` from `wexample/symfony-helpers` for the `FUNCTION_OPTION_IS_SAFE` / `FUNCTION_OPTION_NEEDS_ENVIRONMENT` constants.
+
+- {{ path("src/Twig/IconExtension.php") }} exposes `icon()`, `icon_source()` and `icon_list()`. It owns no logic — each method forwards to `IconService` with the same arguments. Note that the function name for the first is built as `VariableHelper::ICON . '_source'`, and the callable as `VariableHelper::ICON . 'Source'`.
+- {{ path("src/Twig/MarkdownExtension.php") }} owns a `markdown` filter and its own `CommonMarkConverter`, built in the constructor with `'html_input' => 'strip'` and `'allow_unsafe_links' => false`. No service, no manager: the converter is the whole implementation.
+- {{ path("src/Twig/SystemExtension.php") }} exposes `system_version()`, which reads `$this->kernel->getProjectDir() . '/' . $versionFile` (default `version.txt`) and returns `null` when the file is absent. The file belongs to the host application, not to this package.
+
+### Icon resolution
+
+{{ path("src/Service/IconService.php") }} is the dispatcher. It takes the three managers by constructor injection and never touches the filesystem itself. Every entry point starts by splitting the name on `AbstractIconManager::LIBRARY_SEPARATOR`, which is `':'`:
+
+```php
+[$prefix, $icon] = array_pad(explode(AbstractIconManager::LIBRARY_SEPARATOR, $name, 2), 2, '');
+```
+
+`icon()` then tries the managers in a fixed order — Phosphor, Material, Font Awesome — comparing `$lib = $type ?? $prefix` against each `getLibraryKey()` (`ph`, `material`, `fa`). Phosphor is checked first and unconditionally, since it needs no index. Material and Font Awesome are additionally gated on `hasIcon($icon)`. When nothing matches, the service returns a bare `<i class="icon">` containing the raw name, so an unresolved icon degrades to visible text rather than to an exception.
+
+Two things an agent editing this file should know before changing behaviour. The docblock advertises auto-detection for unprefixed names, but the `$lib === null` branches guarding it are unreachable: `array_pad` fills with `''`, and an unprefixed `"coffee"` yields `$prefix = 'coffee'`, `$icon = ''`. And `iconSource()` returns inline SVG for Material and Font Awesome only — Phosphor and the default case both return `DomHelper::buildTag('span')`, an empty tag, because Phosphor ships glyphs as a webfont with no SVG files to inline.
+
+### Icon managers and their index
+
+{{ path("src/Service/Icon/AbstractIconManager.php") }} owns everything the three libraries share and leaves three abstract methods: `getLibraryKey()`, `buildIconsList()` and `iconTag()`.
+
+The index is built in the constructor, not lazily. On a cache miss it calls `buildIconsList()` and saves immediately; on a hit it restores the array:
+
+```php
+$this->cacheItem = $this->cache->getItem($this->getCacheKey());
+
+if (! $this->cacheItem->isHit()) {
+    $this->icons = $this->buildIconsList();
+    $this->saveRegistryCache();
+}
+```
+
+Cache keys are `'symfony_design_system_icons_list_' . $this->getLibraryKey()` — the `symfony_design_system` prefix is inherited from an earlier package and does not match this one's name. Rendered SVG is cached too, one entry per set of CSS classes keyed by `md5(implode($classes))`, written back into the same cache item by `loadIconSvg()`. That method parses the file with `DOMDocument`, appends `icon` plus the caller's classes to the root `<svg>` element's `class` attribute, and re-serialises. This is what `ext-dom` in {{ path("composer.json") }} is for.
+
+`iconList()` is the exception to the caching: it calls `buildIconsList()` directly and rescans the filesystem each time.
+
+The three concrete managers differ in where their icons come from:
+
+- {{ path("src/Service/Icon/FaIconManager.php") }} scans `vendor/fortawesome/font-awesome/svgs/` under the project dir, two levels deep, keying icons as `group/name` (`solid/coffee`). Its `iconTag()` nests `<i class="fa fa-solid fa-coffee">` inside the requested tag, turning the `/` into a second class.
+- {{ path("src/Service/Icon/MaterialIconManager.php") }} scans `node_modules/material-design-icons/*/svg/production/`, keeping only files matching `ic_*_24px.svg` and stripping both affixes. Its `iconTag()` emits the name as tag text with the `material-icons` class.
+- {{ path("src/Service/Icon/PhosphorIconManager.php") }} has no index at all: `buildIconsList()` returns `[]` and `hasIcon()` is overridden to `$name !== ''`. Names are `style/icon` and become the classes `ph-bold ph-heart`. Nothing is validated, and nothing is read from disk.
+
+Both filesystem scans are guarded by `is_dir()` and silently produce an empty index when the library is not installed — a missing dependency shows up as icons rendering as text, not as an error.
+
+### Front-end assets
+
+{{ path("assets") }} carries no PHP. {{ path("assets/css/partials/_font-all.scss") }} is the single entry point and only forwards the per-library partials:
+
+```scss
+@forward 'font-fa';
+@forward 'font-phosphor';
+```
+
+Each partial imports from `node_modules`, and the libraries themselves are declared as `peerDependencies` in {{ path("assets/package.json") }} — the host application installs them. There is no Material partial: that library is served by the `material-icons` font class alone.
+
+### TemplateHelper
+
+{{ path("src/Helper/TemplateHelper.php") }} is a static-only class about view paths and names, unrelated to icons and to the container. It holds `TEMPLATE_FILE_EXTENSION = '.html.twig'` and `VIEW_PATH_PREFIX = '@'`, and offers `removeExtension()`, `trimPathPrefix()`, `joinNormalizedParts()` (snake-cases each part before joining), `explodeControllerNamespaceSubParts()` (drops the bundle-length prefix from a controller namespace, or two segments when no bundle is given) and `stripTwigContextKeys()`. Add a pure string function here; add anything needing the kernel, the cache or Twig under `src/Service/`, where the container will autowire it.
