@@ -16,8 +16,14 @@
     }
   ],
   "require": {
+    "php": ">=8.5",
     "ext-dom": "*",
     "league/commonmark": "^2.4",
     "wexample/symfony-helpers": ">=7.0.0"
+  },
+  "extra": {
+    "install": {
+      "bundle_env": "all"
+    }
   }
 }
