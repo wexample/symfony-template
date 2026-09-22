@@ -1,0 +1,78 @@
+## Rendering markdown
+
+In a template, the filter for a text already at hand and the function for a file of the project:
+
+```twig
+{{ article.body|markdown }}
+{{ markdown_file('vendor/wexample/symfony-design-system/README.md') }}
+```
+
+Both render Github-flavoured markdown, so a pipe table comes out as a `<table>`. Both take a flavour as a second argument when strict CommonMark is what is wanted — `{{ text|markdown('commonmark') }}` — and both return html marked safe, so no `|raw` is needed.
+
+`markdown_file()` reads from the project directory and refuses a path that lands outside it, so a path built from a route parameter is safe to pass. A file that is not there renders as nothing. The front matter, if the document carries one, is not printed.
+
+## Reading a document
+
+Inject `MarkdownService` and ask it for a file:
+
+```php
+use Wexample\SymfonyTemplate\Service\MarkdownService;
+
+public function __construct(
+    private readonly MarkdownService $markdown,
+) {
+}
+
+public function show(string $path): string
+{
+    $document = $this->markdown->read($path);
+
+    if (null === $document) {
+        return '';
+    }
+
+    return $this->markdown->toHtml(
+        $document
+            ->withoutComments()
+            ->withoutSections(['Commit log'])
+            ->body
+    );
+}
+```
+
+`withoutSections()` takes a heading and everything under it, up to the next heading of its own rank or above. The mechanism is the package's; the list is yours — which sections a document owes its reader is a question about that documentation, and a package deciding it for everyone would be a package to edit every time one application changes its mind.
+
+Front matter fields are read one at a time, and never trusted to be the shape they were meant to be:
+
+```php
+$document->text('title');      // a line of text, or null when empty or absent
+$document->texts('target');    // a list, whether one value was written or several
+$document->frontMatter;        // the raw array, for anything else
+```
+
+## Listing many documents
+
+A page drawing a table of a hundred and fifty documents needs their fields, not their bodies. `readFrontMatter()` streams the head of the file and closes the handle at the closing fence:
+
+```php
+foreach ($paths as $path) {
+    $fields = $this->markdown->readFrontMatter($path);
+}
+```
+
+Reaching for `read()` here would open every procedure in full to show a column of titles.
+
+## Working on a text with no file behind it
+
+`MarkdownHelper` is the same work as static functions, for a string that never was a file — a form field, a fixture inside a test:
+
+```php
+use Wexample\SymfonyTemplate\Helper\MarkdownHelper;
+
+[$frontMatter, $body] = MarkdownHelper::splitFrontMatter($content);
+
+MarkdownHelper::withoutComments($body);
+MarkdownHelper::withoutSections($body, ['Commit log']);
+```
+
+It tracks fenced code as it walks, so a `# Commit log` inside a shell block stays where it is.

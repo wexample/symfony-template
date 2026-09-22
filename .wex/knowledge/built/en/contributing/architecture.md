@@ -1,6 +1,6 @@
 ## Architecture
 
-The package is a Symfony bundle with no controllers, no entities and no configuration tree: it registers a handful of Twig extensions, and those extensions delegate to services. Four layers, in the order a request crosses them — bundle → container → Twig extension → service → icon manager — plus one static helper that sits outside the container entirely.
+The package is a Symfony bundle with no controllers, no entities and no configuration tree: it registers a handful of Twig extensions, and those extensions delegate to services. Four layers, in the order a request crosses them — bundle → container → Twig extension → service → icon manager or markdown converter — plus two static helpers that sit outside the container entirely.
 
 ### Bundle and container wiring
 
@@ -25,15 +25,32 @@ Wexample\SymfonyTemplate\:
     tags: ['controller.service_arguments']
 ```
 
-`src/Helper/` is deliberately absent from that glob: `TemplateHelper` is all static methods and is never instantiated.
+`src/Helper/`, `src/Class/` and `src/Enum/` are deliberately absent from that glob: `TemplateHelper` and `MarkdownHelper` are all static methods and are never instantiated, `MarkdownDocument` is a value object built from a string, and `MarkdownFlavor` is an enum.
 
 ### The Twig layer
 
 Three extensions in src/Twig, all extending `AbstractExtension` from `wexample/symfony-helpers` for the `FUNCTION_OPTION_IS_SAFE` / `FUNCTION_OPTION_NEEDS_ENVIRONMENT` constants.
 
 - src/Twig/IconExtension.php exposes `icon()`, `icon_source()` and `icon_list()`. It owns no logic — each method forwards to `IconService` with the same arguments. Note that the function name for the first is built as `VariableHelper::ICON . '_source'`, and the callable as `VariableHelper::ICON . 'Source'`.
-- src/Twig/MarkdownExtension.php owns a `markdown` filter and its own `CommonMarkConverter`, built in the constructor with `'html_input' => 'strip'` and `'allow_unsafe_links' => false`. No service, no manager: the converter is the whole implementation.
+- src/Twig/MarkdownExtension.php exposes the `markdown` filter and the `markdown_file()` function, both forwarding to `MarkdownService`. The one thing it owns is path resolution — see below.
 - src/Twig/SystemExtension.php exposes `system_version()`, which reads `$this->kernel->getProjectDir() . '/' . $versionFile` (default `version.txt`) and returns `null` when the file is absent. The file belongs to the host application, not to this package.
+
+### Markdown
+
+The whole of markdown in the Wexample suite is here, and deliberately in one package. Before this, three implementations shared the subject — a `markdown` filter in this package, a `markdown_file()` function in `wexample/symfony-content` that read a file without converting it, and the third-party `markdown_to_html` filter of `twig/markdown-extra` — none of which rendered a table. The two others are gone, and `symfony-content` no longer declares a markdown dependency.
+
+Four files, from the most general down:
+
+- src/Enum/MarkdownFlavor.php names the dialect and builds the converter for it. `GITHUB` is the default, and `default()` says so in one place. The reason is tables: CommonMark has none, so a pipe table renders as rows of vertical bars. Github's flavour is a superset — tables, strikethrough, task lists, autolinks — so moving the default to it is a correction for every existing caller, and `COMMON_MARK` stays reachable for whoever needs a pipe to be a pipe. `fromNameOrDefault()` takes the string a template typed and falls back rather than raising.
+- src/Helper/MarkdownHelper.php is the pure string work: `splitFrontMatter()`, `withoutComments()`, `withoutSection()` and `withoutSections()`. It walks lines and tracks fenced code rather than running regular expressions over the whole text, and that is the point of it — a shell block is full of lines opening on `#`, a documentation about markdown is full of lines opening on `---`, and read without the fence in mind a code block gets taken for headings and a page loses its second half. `FRONT_MATTER_MAX_LINES` stops an opening `---` that never closes from being read as a front matter.
+- src/Class/MarkdownDocument.php is the immutable pair of a parsed front matter and a body. `fromString()` splits and parses; `withoutComments()` and `withoutSections()` give back another document; `text()` and `texts()` read one field as a line of text or as a list, trimming and treating a field left empty as a field never written. A front matter yaml cannot parse comes out as no fields at all — one malformed document is a line to report in a list of a hundred and fifty, not a page that refuses to open.
+- src/Service/MarkdownService.php is the container-visible entry point and the only piece that touches a disk. `toHtml()` renders, caching one converter per flavour because assembling a converter assembles its whole extension set. `parse()` and `read()` build a document from a string or a file. `readFrontMatter()` exists next to `read()` for one reason: a list of a hundred and fifty documents is drawn from thirteen fields apiece, and it streams the head of the file and closes the handle at the closing fence rather than reading a hundred and fifty whole procedures.
+
+The converter options are the ones the filter has always carried — `'html_input' => 'strip'` and `'allow_unsafe_links' => false` — so html written inside a document is dropped rather than escaped, and a `javascript:` link never reaches the page.
+
+Nothing under `Service/`, `Class/`, `Helper/` or `Enum/` knows about a kernel. What `MarkdownExtension` adds on top is the one question that is about templates and not about markdown: a path written in a twig file is read from the project directory, and `resolve()` refuses anything that lands outside it. That check normalises `.` and `..` on the text alone and never calls `realpath()` — in development the packages of the suite are symlinked into `vendor/`, and a real path would place them outside the project and refuse a file the template is entitled to read.
+
+`markdown_file()` drops the front matter before rendering: it is what the file says about itself, addressed to the tooling, and printing it would put a rule and a list of colons at the top of the page.
 
 ### Icon resolution
 
