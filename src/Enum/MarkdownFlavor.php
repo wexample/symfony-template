@@ -2,9 +2,9 @@
 
 namespace Wexample\SymfonyTemplate\Enum;
 
-use League\CommonMark\CommonMarkConverter;
-use League\CommonMark\ConverterInterface;
-use League\CommonMark\GithubFlavoredMarkdownConverter;
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 
 /**
  * Which dialect of markdown a text is read as.
@@ -49,13 +49,23 @@ enum MarkdownFlavor: string
     }
 
     /**
-     * @param array<string, mixed> $options passed to the converter's environment
+     * The environment a converter of this flavour runs on, not yet sealed.
+     *
+     * An environment and not a converter, so that whoever builds on it can still
+     * register a renderer before the first conversion locks it — which is how a
+     * converter drawing tables in the design system's own markup is made.
+     *
+     * @param array<string, mixed> $options
      */
-    public function converter(array $options = []): ConverterInterface
+    public function environment(array $options = []): Environment
     {
-        return match ($this) {
-            self::COMMON_MARK => new CommonMarkConverter($options),
-            self::GITHUB => new GithubFlavoredMarkdownConverter($options),
-        };
+        $environment = new Environment($options);
+        $environment->addExtension(new CommonMarkCoreExtension());
+
+        if (self::GITHUB === $this) {
+            $environment->addExtension(new GithubFlavoredMarkdownExtension());
+        }
+
+        return $environment;
     }
 }

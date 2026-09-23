@@ -3,6 +3,8 @@
 namespace Wexample\SymfonyTemplate\Service;
 
 use League\CommonMark\ConverterInterface;
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\MarkdownConverter;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Wexample\SymfonyTemplate\Class\MarkdownDocument;
@@ -51,9 +53,31 @@ class MarkdownService
     ): string {
         $flavor = MarkdownFlavor::fromNameOrDefault($flavor);
 
-        $converter = $this->converters[$flavor->value] ??= $flavor->converter(self::CONVERTER_OPTIONS);
+        $converter = $this->converters[$flavor->value] ??= $this->buildConverter($flavor);
 
         return (string) $converter->convert($markdown);
+    }
+
+    /**
+     * Where a child adds what its output needs, before the environment is sealed.
+     *
+     * Nothing here by default: this service renders plain html, the one a mail
+     * or a feed can carry. A converter drawing into a particular markup extends
+     * this class and registers its renderers here, and stays a separate service
+     * — the caller chooses which of the two it wants.
+     */
+    protected function configureEnvironment(
+        Environment $environment,
+        MarkdownFlavor $flavor
+    ): void {
+    }
+
+    private function buildConverter(MarkdownFlavor $flavor): ConverterInterface
+    {
+        $environment = $flavor->environment(self::CONVERTER_OPTIONS);
+        $this->configureEnvironment($environment, $flavor);
+
+        return new MarkdownConverter($environment);
     }
 
     /**
