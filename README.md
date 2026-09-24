@@ -1,6 +1,6 @@
 # symfony_template
 
-Version: 2.0.0
+Version: 2.0.1
 
 `wexample/symfony-template` is a Symfony bundle that adds templating helpers to a Twig-based application: an `icon()` / `icon_source()` / `icon_list()` set that resolves names like `fa:solid/coffee` across Font Awesome, Material Icons and Phosphor — as a tag or as inlined, class-annotated SVG; the whole of the suite's markdown, which is a `markdown` filter and a `markdown_file()` function rendering Github-flavoured markdown, tables included, with the front matter and section handling that sits behind them; and a `system_version()` function reading the project's `version.txt`. Alongside them, `Wexample\SymfonyTemplate\Helper\TemplateHelper` handles the string work around views: stripping the `.html.twig` extension, trimming the `@` namespace prefix, turning a controller namespace into snake-cased path parts.
 
@@ -140,7 +140,7 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 - ext-dom: *
 - league/commonmark: ^2.4
 - symfony/yaml: >=6.2
-- wexample/symfony-helpers: >=9.0.0
+- wexample/symfony-helpers: >=10.0.0
 
 ## Versioning & Compatibility Policy
 
