@@ -1,2 +1,4 @@
+// Bold alone: an icon is written `ph:bold/<name>`, and the regular weight's
+// rules target `.ph.ph-<name>`, a class no icon tag carries — imported, they
+// were some 1500 rules in every layout stylesheet matching nothing.
 @import "@phosphor-icons/web/bold";
-@import "@phosphor-icons/web/regular";
