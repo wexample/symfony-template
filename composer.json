@@ -28,7 +28,7 @@
     "wexample/symfony-helpers": ">=15.0.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^9.5|^10.0|^11.0|^12.0"
+    "phpunit/phpunit": "^13"
   },
   "extra": {
     "install": {
