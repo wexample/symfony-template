@@ -10,6 +10,7 @@ use Symfony\Component\Yaml\Yaml;
 use Wexample\SymfonyTemplate\Class\MarkdownDocument;
 use Wexample\SymfonyTemplate\Enum\MarkdownFlavor;
 use Wexample\SymfonyTemplate\Helper\MarkdownHelper;
+use Wexample\SymfonyHelpers\Attribute\WorkerSafe;
 
 /**
  * The one place in the suite where markdown is read and turned into html.
@@ -42,6 +43,7 @@ class MarkdownService
      *
      * @var array<string, ConverterInterface>
      */
+    #[WorkerSafe('One converter per flavour, configured the same for every request.')]
     private array $converters = [];
 
     /**

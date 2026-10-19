@@ -8,13 +8,15 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Twig\Environment;
+use Wexample\SymfonyHelpers\Attribute\WorkerSafe;
 
 abstract class AbstractIconManager
 {
     public const LIBRARY_SEPARATOR = ':';
 
+    #[WorkerSafe('The icon list, built once from the bundled files.')]
     protected array $icons = [];
-    protected string $projectDir;
+    protected readonly string $projectDir;
     private CacheItemInterface $cacheItem;
 
     public function __construct(
