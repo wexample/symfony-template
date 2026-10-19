@@ -7,10 +7,10 @@ use League\CommonMark\Environment\Environment;
 use League\CommonMark\MarkdownConverter;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
+use Wexample\SymfonyHelpers\Attribute\WorkerSafe;
 use Wexample\SymfonyTemplate\Class\MarkdownDocument;
 use Wexample\SymfonyTemplate\Enum\MarkdownFlavor;
 use Wexample\SymfonyTemplate\Helper\MarkdownHelper;
-use Wexample\SymfonyHelpers\Attribute\WorkerSafe;
 
 /**
  * The one place in the suite where markdown is read and turned into html.
